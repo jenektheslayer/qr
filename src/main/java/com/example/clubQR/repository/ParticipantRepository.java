@@ -1,4 +1,9 @@
 package com.example.clubQR.repository;
 
-public class ParticipantRepository {
+import com.example.clubQR.entity.Participant;
+import org.springframework.data.jpa.repository.JpaRepository;
+
+public interface ParticipantRepository extends JpaRepository<Participant, Long> {
+
+
 }
