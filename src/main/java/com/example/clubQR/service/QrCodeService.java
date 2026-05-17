@@ -1,15 +1,18 @@
 package com.example.clubQR.service;
 
 
+import com.example.clubQR.dto.ParticipantResponse;
+import com.example.clubQR.dto.QrCheckResponse;
 import com.example.clubQR.entity.Participant;
 import com.example.clubQR.entity.QrCode;
 import com.example.clubQR.exception.QrCodeNotFoundException;
 import com.example.clubQR.repository.ParticipantRepository;
 import com.example.clubQR.repository.QrCodeRepository;
-import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -27,7 +30,7 @@ public class QrCodeService {
     }
 
     @Transactional
-    public String processQrCode(UUID qrUuid) {
+    public QrCheckResponse processQrCode(UUID qrUuid) {
         Optional<QrCode> optionalQrCode = qrCodeRepository.findByQrUuid(qrUuid);
 
         QrCode qrCode = optionalQrCode.orElseThrow(() ->
@@ -38,34 +41,58 @@ public class QrCodeService {
         qrCode.setQrUuid(UUID.randomUUID());
         qrCodeRepository.save(qrCode);
 
-        return participant.getFullName();
+        return new QrCheckResponse(participant.getFullName());
     }
 
-    public List<Participant> getAllParticipants() {
-        return participantRepository.findAll();
+    public List<ParticipantResponse> getAllParticipants() {
+        List<Participant> participants = participantRepository.findAll();
+        List<ParticipantResponse> responses = new ArrayList<>();
+
+        for (Participant p : participants) {
+            responses.add(new ParticipantResponse(
+                p.getId(),
+                p.getFirstName(),
+                p.getLastName(),
+                p.getMiddleName(),
+                p.getFullName()
+            ));
+        }
+        return responses;
     }
 
     @Transactional
-    public Participant addParticipant(String firstName, String lastName, String middleName) {
+    public ParticipantResponse addParticipant(String firstName, String lastName, String middleName) {
         Participant participant = new Participant(firstName, lastName, middleName);
-        participantRepository.save(participant);
+        participant = participantRepository.save(participant);
 
         QrCode qrCode = new QrCode(participant, UUID.randomUUID());
         qrCodeRepository.save(qrCode);
 
-        return participant;
+        return new ParticipantResponse(
+                participant.getId(),
+                participant.getFirstName(),
+                participant.getLastName(),
+                participant.getMiddleName(),
+                participant.getFullName()
+        );
     }
 
     @Transactional
-    public Participant updateParticipant(Long id, String firstName, String lastName, String middleName) {
+    public ParticipantResponse updateParticipant(Long id, String firstName, String lastName, String middleName) {
         Participant participant = participantRepository
                 .findById(id).orElseThrow(() -> new QrCodeNotFoundException("Участник не найден" + id));
         participant.setFirstName(firstName);
         participant.setLastName(lastName);
         participant.setMiddleName(middleName);
-        participantRepository.save(participant);
+        participant = participantRepository.save(participant);
 
-        return participant;
+        return new ParticipantResponse(
+                participant.getId(),
+                participant.getFirstName(),
+                participant.getLastName(),
+                participant.getMiddleName(),
+                participant.getFullName()
+        );
     }
 
     @Transactional
