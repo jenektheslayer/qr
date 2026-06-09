@@ -1,14 +1,18 @@
 package com.example.clubQR.controller;
 
+import com.example.clubQR.dto.DeleteResponse;
+import com.example.clubQR.dto.ParticipantRequest;
+import com.example.clubQR.dto.ParticipantResponse;
 import com.example.clubQR.entity.Participant;
 import com.example.clubQR.service.QrCodeService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/api/participants")
+@RequestMapping("/api/v1/participants")
 public class ParticipantController {
 
     private final QrCodeService qrCodeService;
@@ -17,37 +21,32 @@ public class ParticipantController {
         this.qrCodeService = qrCodeService;
     }
     @GetMapping
-    public ResponseEntity<?> getAllParticipants() {
-
+    public ResponseEntity<List<ParticipantResponse>> getAllParticipants() {
         return ResponseEntity.ok(qrCodeService.getAllParticipants());
     }
 
     @PostMapping
-    public ResponseEntity<?> addParticipant(@RequestBody Map<String, String> request) {
-        String firstName = request.get("firstName");
-        String lastName = request.get("lastName");
-        String middleName = request.get("middleName");
-
-        return ResponseEntity.ok(qrCodeService.addParticipant(firstName, lastName, middleName));
+    public ResponseEntity<ParticipantResponse> addParticipant(@RequestBody ParticipantRequest request) {
+        return ResponseEntity.ok(
+                qrCodeService.addParticipant(request.getFirstName(), request.getLastName(), request.getMiddleName())
+        );
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<?> updateParticipant(
+    public ResponseEntity<ParticipantResponse> updateParticipant(
             @PathVariable Long id,
-            @RequestBody Map<String, String> request
+            @RequestBody ParticipantRequest request
     ) {
-        String firstName = request.get("firstName");
-        String lastName = request.get("lastName");
-        String middleName = request.get("middleName");
-
-        return ResponseEntity.ok(qrCodeService.updateParticipant(id, firstName, lastName, middleName));
+        return ResponseEntity.ok(
+                qrCodeService.updateParticipant(
+                        id, request.getFirstName(), request.getLastName(), request.getMiddleName())
+        );
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<?> deleteParticipant(@PathVariable Long id) {
+    public ResponseEntity<DeleteResponse> deleteParticipant(@PathVariable Long id) {
         qrCodeService.deleteParticipant(id);
-
-        return ResponseEntity.ok(Map.of("Message", "Участник удален"));
+        return ResponseEntity.ok(new DeleteResponse("Участник удален"));
     }
 
 }

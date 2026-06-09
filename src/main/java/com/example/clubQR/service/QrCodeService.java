@@ -6,6 +6,7 @@ import com.example.clubQR.dto.QrCheckResponse;
 import com.example.clubQR.entity.Participant;
 import com.example.clubQR.entity.QrCode;
 import com.example.clubQR.exception.QrCodeNotFoundException;
+import com.example.clubQR.mapper.ParticipantMapper;
 import com.example.clubQR.repository.ParticipantRepository;
 import com.example.clubQR.repository.QrCodeRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,7 +35,7 @@ public class QrCodeService {
         Optional<QrCode> optionalQrCode = qrCodeRepository.findByQrUuid(qrUuid);
 
         QrCode qrCode = optionalQrCode.orElseThrow(() ->
-                new QrCodeNotFoundException("Недействительный QR - код: " + qrUuid) // или здесь кастомный IOException??(спросить)
+                new QrCodeNotFoundException("Недействительный QR - код: " + qrUuid)
         );
 
         Participant participant = qrCode.getParticipant();
@@ -49,13 +50,7 @@ public class QrCodeService {
         List<ParticipantResponse> responses = new ArrayList<>();
 
         for (Participant p : participants) {
-            responses.add(new ParticipantResponse(
-                p.getId(),
-                p.getFirstName(),
-                p.getLastName(),
-                p.getMiddleName(),
-                p.getFullName()
-            ));
+            responses.add(ParticipantMapper.toDto(p));
         }
         return responses;
     }
@@ -68,35 +63,26 @@ public class QrCodeService {
         QrCode qrCode = new QrCode(participant, UUID.randomUUID());
         qrCodeRepository.save(qrCode);
 
-        return new ParticipantResponse(
-                participant.getId(),
-                participant.getFirstName(),
-                participant.getLastName(),
-                participant.getMiddleName(),
-                participant.getFullName()
-        );
+        return ParticipantMapper.toDto(participant);
     }
 
     @Transactional
     public ParticipantResponse updateParticipant(Long id, String firstName, String lastName, String middleName) {
         Participant participant = participantRepository
-                .findById(id).orElseThrow(() -> new QrCodeNotFoundException("Участник не найден" + id));
+                .findById(id).orElseThrow(() -> new QrCodeNotFoundException("Участник не найден " + id));
         participant.setFirstName(firstName);
         participant.setLastName(lastName);
         participant.setMiddleName(middleName);
         participant = participantRepository.save(participant);
 
-        return new ParticipantResponse(
-                participant.getId(),
-                participant.getFirstName(),
-                participant.getLastName(),
-                participant.getMiddleName(),
-                participant.getFullName()
-        );
+        return ParticipantMapper.toDto(participant);
     }
 
     @Transactional
     public void deleteParticipant(Long id) {
+        if (!participantRepository.existsById(id)) {
+            throw new QrCodeNotFoundException("Участник не найден: " + id);
+        }
         participantRepository.deleteById(id);
     }
 }
