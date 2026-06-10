@@ -27,9 +27,7 @@ public class ParticipantController {
 
     @PostMapping
     public ResponseEntity<ParticipantResponse> addParticipant(@RequestBody ParticipantRequest request) {
-        return ResponseEntity.ok(
-                qrCodeService.addParticipant(request.getFirstName(), request.getLastName(), request.getMiddleName())
-        );
+        return ResponseEntity.ok(qrCodeService.addParticipant(request));
     }
 
     @PutMapping("/{id}")
@@ -37,10 +35,7 @@ public class ParticipantController {
             @PathVariable Long id,
             @RequestBody ParticipantRequest request
     ) {
-        return ResponseEntity.ok(
-                qrCodeService.updateParticipant(
-                        id, request.getFirstName(), request.getLastName(), request.getMiddleName())
-        );
+        return ResponseEntity.ok(qrCodeService.updateParticipant(id, request));
     }
 
     @DeleteMapping("/{id}")

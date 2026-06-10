@@ -1,10 +1,12 @@
 package com.example.clubQR.service;
 
 
+import com.example.clubQR.dto.ParticipantRequest;
 import com.example.clubQR.dto.ParticipantResponse;
 import com.example.clubQR.dto.QrCheckResponse;
 import com.example.clubQR.entity.Participant;
 import com.example.clubQR.entity.QrCode;
+import com.example.clubQR.exception.ParticipantNotFoundException;
 import com.example.clubQR.exception.QrCodeNotFoundException;
 import com.example.clubQR.mapper.ParticipantMapper;
 import com.example.clubQR.repository.ParticipantRepository;
@@ -56,8 +58,8 @@ public class QrCodeService {
     }
 
     @Transactional
-    public ParticipantResponse addParticipant(String firstName, String lastName, String middleName) {
-        Participant participant = new Participant(firstName, lastName, middleName);
+    public ParticipantResponse addParticipant(ParticipantRequest request) {
+        Participant participant = new Participant(request.getFirstName(), request.getLastName(),request.getMiddleName());
         participant = participantRepository.save(participant);
 
         QrCode qrCode = new QrCode(participant, UUID.randomUUID());
@@ -67,12 +69,12 @@ public class QrCodeService {
     }
 
     @Transactional
-    public ParticipantResponse updateParticipant(Long id, String firstName, String lastName, String middleName) {
+    public ParticipantResponse updateParticipant(Long id, ParticipantRequest request) {
         Participant participant = participantRepository
-                .findById(id).orElseThrow(() -> new QrCodeNotFoundException("Участник не найден " + id));
-        participant.setFirstName(firstName);
-        participant.setLastName(lastName);
-        participant.setMiddleName(middleName);
+                .findById(id).orElseThrow(() -> new ParticipantNotFoundException("Участник не найден " + id));
+        participant.setFirstName(request.getFirstName());
+        participant.setLastName(request.getLastName());
+        participant.setMiddleName(request.getMiddleName());
         participant = participantRepository.save(participant);
 
         return ParticipantMapper.toDto(participant);
@@ -80,9 +82,8 @@ public class QrCodeService {
 
     @Transactional
     public void deleteParticipant(Long id) {
-        if (!participantRepository.existsById(id)) {
-            throw new QrCodeNotFoundException("Участник не найден: " + id);
-        }
-        participantRepository.deleteById(id);
+        Participant participant = participantRepository.findById(id)
+                .orElseThrow(() -> new ParticipantNotFoundException("Участник не найден: " + id));
+        participantRepository.delete(participant);
     }
 }
