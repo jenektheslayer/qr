@@ -10,9 +10,8 @@ import org.springframework.web.bind.annotation.*;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/api/qr")
+@RequestMapping("/api/v1/qr")
 public class QrController {
-
     private final QrCodeService qrCodeService;
 
     public QrController(QrCodeService qrCodeService) {

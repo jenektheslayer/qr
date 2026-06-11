@@ -61,7 +61,6 @@ public class Participant {
         this.middleName = middleName;
     }
 
-
     public String getFullName() {
         String middle = Optional.ofNullable(middleName).orElse("");
         return lastName + " " + firstName + " " + middle;
